@@ -1,0 +1,53 @@
+\documentclass{beamer}
+\mode<presentation>
+{
+  \usetheme{JuanLesPins}
+  \setbeamercovered{transparent}
+}
+\begin{document}
+
+<<setup, cache=FALSE, echo=FALSE, warning=FALSE, include=FALSE>>=
+prefix = "talk"
+# global chunk options
+opts_chunk[["set"]](cache.path = paste0("cache/", prefix, "-"),
+                    fig.path = paste0("figure/", prefix, "-"),
+                    cache = TRUE,
+                    autodep = TRUE,
+                    dev = "pdf",
+                    fig.align = "center",
+                    tidy = FALSE,
+                    size = 'footnotesize')
+@
+\title{Creating a package in R}
+\subtitle{Using devtools and roxyen2}
+\author{Brian Diggs}
+\date{Portland R Users Group, August 22, 2012}
+\maketitle
+
+<<r-opts, echo=FALSE, include=FALSE, message=FALSE>>=
+options(width = 30)
+library("devtools")
+library("roxygen2")
+@
+
+% very important to use option [fragile] for frames containing code output!
+
+\begin{frame}{Evolution of wanting to create a package}
+  \begin{itemize}
+  \item Write some code that solves a particular problem
+  \item Run into same problem again on another project; cut and paste code between projects
+  \item Same problem pops up a few more times; turn solution into
+    function, generalize it somewhat, put the code in a separate file,
+    \texttt{source} it
+  \item Colleague hears about your solution, wants to use it; send the
+    file, hopefully with some comments added as to how it works
+  \item Make some additional changes, maybe rembmer to update
+    comments, forget to send updated version to colleague, think there
+    must be a better way
+  \end{itemize}
+%  \begin{center}
+%    {\big Package}
+%  \end{center}
+\end{frame}
+
+\end{document}
