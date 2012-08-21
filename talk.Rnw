@@ -1,8 +1,11 @@
 \documentclass{beamer}
+\usepackage{dtklogos}
+\usepackage{url}
+\usepackage{hyperref}
 \mode<presentation>
 {
   \usetheme{JuanLesPins}
-  \setbeamercovered{transparent}
+  \setbeamercovered{invisible}
 }
 \begin{document}
 
@@ -26,28 +29,113 @@ opts_chunk[["set"]](cache.path = paste0("cache/", prefix, "-"),
 
 <<r-opts, echo=FALSE, include=FALSE, message=FALSE>>=
 options(width = 30)
+library("diagram")
 library("devtools")
 library("roxygen2")
 @
+
+\section{Motivation}
+\label{sec:motivation}
 
 % very important to use option [fragile] for frames containing code output!
 
 \begin{frame}{Evolution of wanting to create a package}
   \begin{itemize}
-  \item Write some code that solves a particular problem
-  \item Run into same problem again on another project; cut and paste code between projects
-  \item Same problem pops up a few more times; turn solution into
+  \item<1-> Write some code that solves a particular problem
+  \item<2-> Run into same problem again on another project; cut and paste code between projects
+  \item<3-> Same problem pops up a few more times; turn solution into
     function, generalize it somewhat, put the code in a separate file,
     \texttt{source} it
-  \item Colleague hears about your solution, wants to use it; send the
+  \item<4-> Colleague hears about your solution, wants to use it; send the
     file, hopefully with some comments added as to how it works
-  \item Make some additional changes, maybe rembmer to update
+  \item<5-> Make some additional changes, maybe remember to update
     comments, forget to send updated version to colleague, think there
     must be a better way
   \end{itemize}
-%  \begin{center}
-%    {\big Package}
-%  \end{center}
+  \uncover<6->{
+    \begin{center}
+      \LARGE Package!
+    \end{center}
+  }
 \end{frame}
 
+\begin{frame}{Advantages of packages}
+  \begin{itemize}
+  \item Documentation
+  \item Code isolation
+  \item Testing infrastructure
+  \item Cross platform portability
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Aspects not covered}
+  \begin{itemize}
+  \item Version control
+  \item Compiled code in packages
+  \item Submission to CRAN
+  \item Internationalization
+  \item Package maintenance and updating
+  \end{itemize}
+\end{frame}
+
+\section{Prerequisites}
+\label{sec:prerequisites}
+
+\begin{frame}[fragile]
+  \begin{itemize}
+  \item Linux/Unix-like
+    \begin{itemize}
+    \item \url{http://cran.r-project.org/doc/manuals/R-admin.html#Essential-and-useful-other-programs-under-a-Unix_002dalike}
+    \item Compilers
+    \item A {\LaTeX} distribution
+    \end{itemize}
+  \item Windows
+    \begin{itemize}
+    \item \url{http://cran.r-project.org/doc/manuals/R-admin.html#The-Windows-toolset}
+    \item Rtools
+      \url{http://cran.r-project.org/bin/windows/Rtools/}
+    \item {\MiKTeX}, a {\LaTeX} distribution \url{http://www.miktex.org/}
+    \end{itemize}
+  \item Mac OS X
+    \begin{itemize}
+    \item \url{http://cran.r-project.org/bin/macosx/RMacOSX-FAQ.html#What-is-needed-to-build-R}
+    \item Xcode from Apple
+    \item Fortran compiler \url{http://cran.r-project.org/bin/macosx/tools/}
+    \item Mac{\TeX}, a {\LaTeX} distribution \url{http://tug.org/mactex/}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+<<echo=FALSE, fig.width=7, fig.height=4>>=
+par(mar = c(0,0,0,0))
+openplotmat()
+elpos <- coordinates(pos=c(1,1,2))
+fromto <- matrix(ncol=2, byrow=TRUE, data=c(1,2,2,3,2,4))
+nr <- nrow(fromto)
+arrpos <- matrix(ncol=2, nrow=nr)
+for (i in 1:nr)
+    arrpos[i,] <- straightarrow(to = elpos[fromto[i,2], ],
+                                from = elpos[fromto[i, 1], ],
+                                lwd = 2, arr.pos = 0.8, arr.length = 0.5)
+textrect(elpos[1,], shadow.size=0, radx=0.2, rady=0.05, lab="Source directory")
+textrect(elpos[2,], shadow.size=0, radx=0.2, rady=0.05, lab="Source package (.tar.gz)")
+textrect(elpos[3,], shadow.size=0, radx=0.2, rady=0.05, lab="Windows binary package (.zip)")
+textrect(elpos[4,], shadow.size=0, radx=0.2, rady=0.05, lab="Mac binary package (.tgz)")
+textplain(arrpos[1,]+c(0,0.1), lab="R CMD build", adj=c(-0.1,0.5))
+textplain((arrpos[2,] + arrpos[3,])/2 + c(0,0.05), lab="R CMD INSTALL --build")
+@
+\end{frame}
+
+\section{References}
+\label{sec:references}
+
+\begin{frame}
+  \begin{itemize}
+  \item {\it Writing R Extensions}
+    \url{http://cran.r-project.org/doc/manuals/R-exts.html}
+  \item Hadley Wickham's \texttt{devtools} wiki
+    \url{https://github.com/hadley/devtools/wiki}
+  \end{itemize}
+\end{frame}
 \end{document}
