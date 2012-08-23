@@ -9,13 +9,14 @@
 }
 \begin{document}
 
+<<resetpackage, cache=FALSE, echo=FALSE, warning=FALSE, include=FALSE>>=
+unlink("age", recursive=TRUE)
+@
 <<setup, cache=FALSE, echo=FALSE, warning=FALSE, include=FALSE>>=
 prefix = "talk"
 # global chunk options
-opts_chunk[["set"]](cache.path = paste0("cache/", prefix, "-"),
-                    fig.path = paste0("figure/", prefix, "-"),
-                    cache = TRUE,
-                    autodep = TRUE,
+opts_chunk[["set"]](fig.path = paste0("figure/", prefix, "-"),
+                    cache = FALSE,
                     dev = "pdf",
                     fig.align = "center",
                     tidy = FALSE,
@@ -28,7 +29,7 @@ opts_chunk[["set"]](cache.path = paste0("cache/", prefix, "-"),
 \maketitle
 
 <<r-opts, echo=FALSE, include=FALSE, message=FALSE>>=
-options(width = 30)
+options(width = 50)
 library("diagram")
 library("devtools")
 library("roxygen2")
@@ -61,21 +62,44 @@ library("roxygen2")
 
 \begin{frame}{Advantages of packages}
   \begin{itemize}
+  \item Source code organization
   \item Documentation
   \item Code isolation
   \item Testing infrastructure
-  \item Cross platform portability
   \end{itemize}
 \end{frame}
 
 \begin{frame}{Aspects not covered}
   \begin{itemize}
-  \item Version control
+  \item Source code control/version control
   \item Compiled code in packages
   \item Submission to CRAN
   \item Internationalization
   \item Package maintenance and updating
   \end{itemize}
+\end{frame}
+
+\section{Terminology}
+
+\begin{frame}
+<<echo=FALSE, fig.width=7, fig.height=4>>=
+par(mar = c(0,0,0,0))
+openplotmat()
+elpos <- coordinates(pos=c(1,1,2))
+fromto <- matrix(ncol=2, byrow=TRUE, data=c(1,2,2,3,2,4))
+nr <- nrow(fromto)
+arrpos <- matrix(ncol=2, nrow=nr)
+for (i in 1:nr)
+    arrpos[i,] <- straightarrow(to = elpos[fromto[i,2], ],
+                                from = elpos[fromto[i, 1], ],
+                                lwd = 2, arr.pos = 0.8, arr.length = 0.5)
+textrect(elpos[1,], shadow.size=0, radx=0.2, rady=0.05, lab="Source directory")
+textrect(elpos[2,], shadow.size=0, radx=0.2, rady=0.05, lab="Source package (.tar.gz)")
+textrect(elpos[3,], shadow.size=0, radx=0.2, rady=0.05, lab="Windows binary package (.zip)")
+textrect(elpos[4,], shadow.size=0, radx=0.2, rady=0.05, lab="Mac binary package (.tgz)")
+textplain(arrpos[1,]+c(0,0.1), lab="R CMD build", adj=c(-0.1,0.5))
+textplain((arrpos[2,] + arrpos[3,])/2 + c(0,0.05), lab="R CMD INSTALL --build")
+@
 \end{frame}
 
 \section{Prerequisites}
@@ -106,24 +130,202 @@ library("roxygen2")
   \end{itemize}
 \end{frame}
 
+\section{Example function}
+
+\begin{frame}[fragile]
+<<>>=
+source("age.at.R", echo=TRUE, prompt="", continue="",
+       max.deparse.length = Inf)
+@
+\end{frame}
+
+\section{Format of source directory}
+
 \begin{frame}
-<<echo=FALSE, fig.width=7, fig.height=4>>=
-par(mar = c(0,0,0,0))
-openplotmat()
-elpos <- coordinates(pos=c(1,1,2))
-fromto <- matrix(ncol=2, byrow=TRUE, data=c(1,2,2,3,2,4))
-nr <- nrow(fromto)
-arrpos <- matrix(ncol=2, nrow=nr)
-for (i in 1:nr)
-    arrpos[i,] <- straightarrow(to = elpos[fromto[i,2], ],
-                                from = elpos[fromto[i, 1], ],
-                                lwd = 2, arr.pos = 0.8, arr.length = 0.5)
-textrect(elpos[1,], shadow.size=0, radx=0.2, rady=0.05, lab="Source directory")
-textrect(elpos[2,], shadow.size=0, radx=0.2, rady=0.05, lab="Source package (.tar.gz)")
-textrect(elpos[3,], shadow.size=0, radx=0.2, rady=0.05, lab="Windows binary package (.zip)")
-textrect(elpos[4,], shadow.size=0, radx=0.2, rady=0.05, lab="Mac binary package (.tgz)")
-textplain(arrpos[1,]+c(0,0.1), lab="R CMD build", adj=c(-0.1,0.5))
-textplain((arrpos[2,] + arrpos[3,])/2 + c(0,0.05), lab="R CMD INSTALL --build")
+  \begin{itemize}
+  \item Use \texttt{package.skeleton} to make the beginning of the package source
+    \begin{itemize}
+    \item from files (\texttt{code\_files} argument)
+    \item from objects in the environment (\texttt{list} argument, character
+      vector of object names)
+    \end{itemize}
+  \item This is done only once
+  \item Thereafter, edit the files in the new source directory
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+<<package.skeleton>>=
+package.skeleton(name = "age",
+                 code_files = "age.at.R",
+                 path = ".")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+<<>>=
+list.files("age", recursive=TRUE)
+@
+\begin{itemize}
+\item \texttt{DESCRIPTION} and \texttt{NAMESPACE} have specific formats
+\item Source code is under \texttt{R}
+\item Reference documentation is under \texttt{man}
+\item Will add and describe more directories as we go along
+\end{itemize}
+\end{frame}
+
+\section{Documentation}
+
+\begin{frame}[Types]
+  \begin{itemize}
+  \item Reference documentation
+    \begin{itemize}
+    \item Required
+    \item Statically checked
+    \item \texttt{Rd} file format
+    \item in \texttt{man} directory
+    \item Accessible from within R by \texttt{help()}
+    \end{itemize}
+  \item Tutorial or other freeform documentation (vignettes)
+    \begin{itemize}
+    \item Optional
+    \item \texttt{Sweave} documents (\texttt{Rnw} source, PDF output)
+    \item in \texttt{vignette} directory; formerly in \texttt{inst/doc} directory
+    \item Accessible from within R by \texttt{vignette()}
+    \end{itemize}
+  \item Other
+    \begin{itemize}
+    \item Any format, PDF preferred
+    \item in \texttt{inst/doc} directory
+    \item Not directly accessible from within R
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{\texttt{roxygen2} and \texttt{Rd} files}
+  \texttt{Rd} files document function by function
+  \begin{itemize}
+  \item Input parameters
+  \item Output
+  \item Short and long description
+  \end{itemize}
+  \texttt{roxygen2} allows this same information to be documented in the same
+  file as the function source code. The \texttt{Rd} file is then generated from
+  this specification.
+\end{frame}
+
+\begin{frame}[fragile]
+<<echo=FALSE, highlight=FALSE, comment=NA>>=
+cat(readLines("age.at.doc1.R"), sep="\n")
+@
+\end{frame}
+
+\begin{frame}{Vignettes}
+  \begin{itemize}
+  \item Vignettes are \texttt{Sweave} (\texttt{Rnw}) files
+  \item Designed to dynamically use and display the results of the code in the package
+  \item Supplemented with a \texttt{\%\\VignetteIndexEntry\{\}} for indexing purposes
+  \end{itemize}
+\end{frame}
+
+\section{Code isolation (Namespaces)}
+
+\begin{frame}[fragile]
+  \begin{itemize}
+  \item Specifies what is meant to be public versus private
+  \item Does not truly hide anything (can still be accessed)
+  \item Can specify which functions from other packages this package relies on
+  \item Also includes declaration of S3 generics and instances of S3 generics
+  \item This can also be handled by \texttt{roxygen2} so as to keep it with the
+    source code
+  \end{itemize}
+<<echo=FALSE, highlight=FALSE, comment=NA>>=
+cat(readLines("age.at.doc2.R"), sep="\n")
+@
+\end{frame}
+
+\section{Testing infrastructure}
+
+\begin{frame}
+  \begin{itemize}
+  \item Examples in documentation: part documentation, part testing
+    \begin{itemize}
+    \item Are run (by default) as part of package checking
+    \item Only tests that an error is not thrown
+    \item Can be run in an interactive session with \texttt{example()} to see output
+    \end{itemize}
+  \item Explicit tests
+    \begin{itemize}
+    \item In the \texttt{tests} directory
+    \item Can hook into testing suites such as the \texttt{testthat} package
+    \item Can be used to verify results of the examples
+    \end{itemize}
+  \item Vignettes act as a sort of test in that failure to build is not allowed
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Examples}
+<<echo=FALSE, highlight=FALSE, comment=NA>>=
+cat(readLines("age.at.doc3.R"), sep="\n")
+@
+\end{frame}
+
+\subsection{Integrating \texttt{testthat} infrastructure}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{tests/test-all.R}}
+<<echo=FALSE, highlight=FALSE, comment=NA>>=
+cat(readLines("test-all.R"), sep="\n")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\texttt{inst/tests/test-age-at.R}}
+<<echo=FALSE, highlight=FALSE, comment=NA>>=
+cat(readLines("test-age-at.R"), sep="\n")
+@
+\end{frame}
+
+<<echo=FALSE>>=
+aaR <- readLines("age/R/age.at.R")
+writeLines(c(readLines("age.at.doc1.R"),
+             readLines("age.at.doc2.R"),
+             readLines("age.at.doc3.R"),
+             aaR),
+           "age/R/age.at.R")
+dir.create("age/tests")
+dir.create("age/inst")
+dir.create("age/inst/tests")
+writeLines(readLines("test-all.R"),
+           "age/tests/test-all.R")
+writeLines(readLines("test-age-at.R"),
+           "age/inst/tests/test-age-at.R")
+unlink("age/Read-and-delete-me")
+@
+
+\section{Using \texttt{devtools}}
+
+\begin{frame}[fragile]
+  Doing all these things, our package directory now looks like
+<<>>=
+list.files("age", recursive=TRUE)
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Turning the package source into a source package}
+<<>>=
+document("age")
+build("age")
+file.exists("age_1.0.tar.gz")
+@
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Checking the package}
+<<>>=
+check("age")
 @
 \end{frame}
 
@@ -138,4 +340,13 @@ textplain((arrpos[2,] + arrpos[3,])/2 + c(0,0.05), lab="R CMD INSTALL --build")
     \url{https://github.com/hadley/devtools/wiki}
   \end{itemize}
 \end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Session info}
+<<results="asis">>=
+toLatex(sessionInfo())
+@
+\end{frame}
+
 \end{document}
+
